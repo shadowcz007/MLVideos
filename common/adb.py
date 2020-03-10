@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import subprocess
+from PIL import Image
 
 class AutoAdb():
     def __init__(self):
@@ -44,6 +45,62 @@ class AutoAdb():
         process = os.popen(command)
         output = process.read()
         return output
+
+    #点击
+    def tap(self,x,y):
+        cmd = 'shell input tap {x} {y}'.format(
+            x=x,
+            y=y
+        )
+        self.run(cmd)
+        return
+    
+    #滑动
+    def swipe(self,x1,y1,x2,y2):
+        cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            duration=200
+        )
+        self.run(cmd)
+        return
+
+    #输入文字
+    def input_text(self,text=""):
+        cmd = 'shell am broadcast -a ADB_INPUT_TEXT --es msg {text}'.format(text=text)
+        self.run(cmd)
+        return
+    
+    #后退、返回
+    def back(self):
+        self.run("shell input keyevent 4")
+        return
+
+    #手机截屏
+    def screenshot(self,save_path="./autojump.jpg"):
+        self.run('shell screencap -p /sdcard/autojump.jpg')
+        self.run('pull /sdcard/autojump.jpg .')
+        
+        image=Image.open(save_path)
+        image=image.convert('RGB')
+        image.save(save_path)
+
+        return 
+
+    #拷贝至手机剪切板
+    def copy_to_phone_clipboard(self,text=""):
+        cmd='shell am broadcast -a clipper.set -e text "{text}"'.format(text=text)
+        self.run(cmd)
+        return
+
+    #从手机剪切板粘贴文本出来
+    def paste_from_phone_clipboard(self):
+        cmd='shell am broadcast -a clipper.get'
+        res=self.run(cmd)
+        return res
+        
 
 if __name__ == '__main__':
     try:
